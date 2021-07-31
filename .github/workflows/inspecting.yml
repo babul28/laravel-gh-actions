@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  checking-style:
+    runs-on: ubuntu-latest
+    name: Code Style
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Run PHP-CS-Fixer
+        uses: docker://oskarstark/php-cs-fixer-ga
+        with:
+          args: --config=.php-cs-fixer.php --allow-risky=yes
+
+      - name: Commit Changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Fix code styling
+
+  insights:
+    runs-on: ubuntu-latest
+    name: PHP Insights
+    steps:
+      - uses: actions/checkout@v2
+      - uses: shivammathur/setup-php@v1
+        with:
+          php-version: 8.0
+      - run: composer install --prefer-dist --no-progress --no-suggest
+      - run: vendor/bin/phpinsights -n --ansi --format=github-action
